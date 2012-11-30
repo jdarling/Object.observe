@@ -1,0 +1,56 @@
+<html>
+  <head>
+    <style>
+      #listing{
+        border: 1px solid black;
+        display: inline-block;
+        float: left;
+        width: 20%;
+        max-height: 100%;
+        overflow: auto;
+        margin-left: 1%;
+      }
+      #details{
+        border: 1px solid black;
+        float: left;
+        width: 75%;
+        height: 100%;
+        margin-left: 2%;
+      }
+      tr.selected{
+        background-color: blue;
+        color: white;
+      }
+      #editor{
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <table id="listing">
+      <thead>
+        <tr>
+          <th>Contact</th>
+        </tr>
+      </thead>
+      <tbody id="listingBody">
+      </tbody>
+    </table>
+    <div id="details">
+      <form id="editor">
+        <div>
+          <label for="first">First:</label><input type="text" id="first" />
+        </div>
+        <div>
+          <label for="last">Last:</label><input type="text" id="last" />
+        </div>
+        <div>
+          <label for="phone">Phone:</label><input type="text" id="phone" />
+        </div>
+        <input type="submit" value="Update" />
+      </form>
+    </div>
+    <script type="text/javascript" src="../Object.observe.poly.js"></script>
+    <script type="text/javascript" src="js/phonebook.js"></script>
+  </body>
+</html>

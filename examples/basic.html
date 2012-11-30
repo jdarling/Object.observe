@@ -1,0 +1,56 @@
+<html>
+  <head>
+    <style>
+      .container{
+        border: 1px solid black;
+        height: 300px;
+        width: 300px;
+        display: inline-block;
+        padding: 0;
+        margin: 5px;
+        float: left;
+      }
+      #updateLog{
+        border: 1px solid black;
+        clear: left;
+        display: block;
+      }
+      #updateLog h1{
+        border: 0;
+        padding: 0;
+        margin: 0.5em;
+        font-size: 1.25em;
+        border-bottom: 1px solid black;
+      }
+      #updateLog p.entry{
+        border: 0;
+        padding: 0;
+        margin: 0 0 0 0.5em;
+      }
+    </style>
+  </head>
+  <body>
+    <form id="dataUpdater">
+      <label for="first">First: </label><input type="text" id="first" />
+      <label for="last">Last: </label><input type="text" id="last" />
+      <input type="submit" value="Update" />
+      <button id="addTest">Add Another</button>
+      <button id="deleteTest">Delete Another</button>
+    </form>
+    <div>
+      <div class="container proper">
+        <div>Foo</div>
+      </div>
+      <div class="container firstlast">
+        <div>Foo</div>
+      </div>
+      <div class="container all">
+      </div>
+    </div>
+    <div id="updateLog">
+      <h1>Update Log</h1>
+    </div>
+    <script type="text/javascript" src="../Object.observe.poly.js"></script>
+    <script type="text/javascript" src="js/basic.js"></script>
+  </body>
+</html>
