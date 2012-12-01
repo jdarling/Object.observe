@@ -15,7 +15,7 @@ Limits so far
   Example:
 ```js
 var myObject = {};
-Object.observer(myObject, console.log);
+Object.observe(myObject, console.log);
 myObject.foo = "bar";
 delete myObject.foo;
 ```
