@@ -10,8 +10,31 @@ http://wiki.ecmascript.org/doku.php?id=harmony:observe
 
 Limits so far
 --------------
-  Built using polling... Will update again with polling/getter&setters to make things better at some point
+  Built using polling in combination with getter&setters.  This means that if you do something quick enough it won't get caught.
+  
+  Example:
+```js
+var myObject = {};
+Object.observer(myObject, console.log);
+myObject.foo = "bar";
+delete myObject.foo;
+```
 
-Examples and Usage:
--------------------
+  The observer function would never see the addition of foo since it was deleted so quickly.
+
+Planned Updates
+---------------
+  For FireFox using Proxies will result in better performance.  Will look into this more.
+  
+Examples and Usage
+------------------
   See examples folder
+  
+Latest Updates
+--------------
+Updated to use getters and setters since these result in more reliable and faster updates for known properties.
+
+Fixed some inconsistancies between Chromium special build and this polyfill:
+  * Calculated properties don't get watched (https://mail.mozilla.org/pipermail/es-discuss/2012-August/024759.html)
+  * Moved getNotifier to Object.getNotifier()
+  * Updated exception messages to match

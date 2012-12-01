@@ -119,5 +119,5 @@ var $ = function(idOrName){
     if(i>20){
       clearTimeout(interval);
     }
-  }, 500);
+  }, 100);
 })(this);

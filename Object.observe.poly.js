@@ -10,13 +10,13 @@
   Limits so far;
     Built using polling... Will update again with polling/getter&setters to make things better at some point
 */
+"use strict";
 if(!Object.observe){
-  "use strict";
   (function(extend, global){
     var isCallable = (function(toString){
         var s = toString.call(toString),
             u = typeof u;
-        return typeof this.alert === "object" ?
+        return typeof global.alert === "object" ?
             function(f){
                 return s === toString.call(f) || (!!f && typeof f.toString == u && typeof f.valueOf == u && /^\s*\bfunction\b/.test("" + f));
             }:
@@ -25,19 +25,22 @@ if(!Object.observe){
             }
         ;
     })(extend.prototype.toString);
-
+    var isNumeric=function(n){
+      return !isNaN(parseFloat(n)) && isFinite(n);
+    };
+        
     var validateArguments = function(O, callback){
       if(typeof(O)!=='object'){
         // Throw Error
-        throw new TypeError("Invalid Object");
-      }
-      if(Object.isFrozen(callback)===true){
-        // Throw Error
-        throw new TypeError("Invalid Callback");
+        throw new TypeError("Object.observeObject called on non-object");
       }
       if(isCallable(callback)===false){
         // Throw Error
-        throw new TypeError("Invalid Callback");
+        throw new TypeError("Object.observeObject: Expecting function");
+      }
+      if(Object.isFrozen(callback)===true){
+        // Throw Error
+        throw new TypeError("Object.observeObject: Expecting unfrozen function");
       }
     };
 
@@ -45,29 +48,31 @@ if(!Object.observe){
       var wraped = [];
       var Observer = function(O, callback){
         validateArguments(O, callback);
-        O.getNotifier().addListener(callback);
+        Object.getNotifier(O).addListener(callback);
         if(wraped.indexOf(O)===-1){
           wraped.push(O);
         }else{
-          O.getNotifier()._checkPropertyListing();
+          Object.getNotifier(O)._checkPropertyListing();
         }
       };
       
       Observer.prototype.deliverChangeRecords = function(O){
-        O.getNotifier().deliverChangeRecords();
+        Object.getNotifier(O).deliverChangeRecords();
       };
       
       wraped.lastScanned = 0;
-      setInterval((function(wrapped){
-        return function(){
-          var i = 0, l = wrapped.length, startTime = new Date(), takingTooLong=false;
-          for(i=wrapped.lastScanned; (i<l)&&(!takingTooLong); i++){
-            wrapped[i].getNotifier()._checkPropertyListing();
-            takingTooLong=((new Date())-startTime)>100; // make sure we don't take more than 100 milliseconds to scan all objects
-          }
-          wrapped.lastScanned=i<l?i:0; // reset wrapped so we can make sure that we pick things back up
-        };
-      })(wraped), 100);
+      var f = (function(wrapped){
+              return function(){
+                var i = 0, l = wrapped.length, startTime = new Date(), takingTooLong=false;
+                for(i=wrapped.lastScanned; (i<l)&&(!takingTooLong); i++){
+                  Object.getNotifier(wrapped[i])._checkPropertyListing();
+                  takingTooLong=((new Date())-startTime)>100; // make sure we don't take more than 100 milliseconds to scan all objects
+                }
+                wrapped.lastScanned=i<l?i:0; // reset wrapped so we can make sure that we pick things back up
+                setTimeout(f, 100);
+              };
+            })(wraped);
+      setTimeout(f, 100);
       
       return Observer;
     })();
@@ -83,18 +88,39 @@ if(!Object.observe){
                   })(watching)
                 });
       var wrapProperty = function(object, prop){
-        if(prop==='getNotifier'){
+        var propType = typeof(object[prop]), descriptor = Object.getOwnPropertyDescriptor(object, prop);
+        if((prop==='getNotifier')||(!!descriptor.get)||(!descriptor.enumerable)){
           return false;
         }
-        var idx = properties.length;
-        properties[idx] = prop;
-        values[idx] = object[prop];
+        if((object instanceof Array)&&isNumeric(prop)){
+          var idx = properties.length;
+          properties[idx] = prop;
+          values[idx] = object[prop];
+          return true;
+        }
+        (function(idx, prop){
+          properties[idx] = prop;
+          values[idx] = object[prop];
+          // TODO: Change to use getters and setters on object property
+          Object.defineProperty(object, prop, {
+            get: function(){
+              return values[idx];
+            },
+            set: function(value){
+              if(values[idx] !== value){
+                Object.getNotifier(object).queueUpdate(object, prop, 'updated', values[idx]);
+                values[idx] = value;
+              }
+            }
+          });
+        })(properties.length, prop);
         return true;
       };
       self._checkPropertyListing = function(dontQueueUpdates){
         var object = self._watching, keys = Object.keys(object), i=0, l=keys.length;
         var newKeys = [], oldKeys = properties.slice(0), updates = [];
         var prop, queueUpdates = !dontQueueUpdates, propType, value, idx;
+        
         for(i=0; i<l; i++){
           prop = keys[i];
           value = object[prop];
@@ -104,11 +130,13 @@ if(!Object.observe){
               self.queueUpdate(object, prop, 'new', null, object[prop]);
             }
           }else{
-            if(values[idx] !== value){
-              if(queueUpdates){
-                self.queueUpdate(object, prop, 'updated', values[idx], value);
+            if((object instanceof Array)&&(isNumeric(prop))){
+              if(values[idx] !== value){
+                if(queueUpdates){
+                  self.queueUpdate(object, prop, 'updated', values[idx], value);
+                }
+                values[idx] = value;
               }
-              values[idx] = value;
             }
             oldKeys.splice(oldKeys.indexOf(prop), 1);
           }
@@ -117,7 +145,7 @@ if(!Object.observe){
           l = oldKeys.length;
           for(i=0; i<l; i++){
             idx = properties.indexOf(oldKeys[i]);
-            self.queueUpdate(object, oldKeys[i], 'deleted', values[idx], null);
+            self.queueUpdate(object, oldKeys[i], 'deleted', values[idx]);
             properties.splice(idx,1);
             values.splice(idx,1);
           };
@@ -138,13 +166,12 @@ if(!Object.observe){
       self.listeners = function(){
         return _listeners;
       };
-      self.queueUpdate = function(what, prop, type, was, is){
+      self.queueUpdate = function(what, prop, type, was){
         this.queueUpdates([{
           type: type,
           object: what,
           name: prop,
-          oldValue: was//,
-          //value: is  not to spec :(
+          oldValue: was
         }]);
       };
       self.queueUpdates = function(updates){
@@ -162,28 +189,37 @@ if(!Object.observe){
         }, 100);
       };
       self.deliverChangeRecords = function(){
-        var i = 0, l = _listeners.length;
-        for(i=0; i<l&&((typeof(_listeners[i])==='function')&&(!_listeners[i](_updates))); i++){
+        var i = 0, l = _listeners.length, keepRunning = true;
+        for(i=0; i<l&&keepRunning; i++){
+          if(typeof(_listeners[i])==='function'){
+            if(_listeners[i]===console.log){
+              console.log(_updates);
+            }else{
+              keepRunning = !(_listeners[i](_updates));
+            }
+          }
         }
         _updates=[];
       };
       self._checkPropertyListing(true);
     };
     
-    extend.prototype.getNotifier = function(){
-      var _notifier = new Notifier(this);
-      this.getNotifier = function(){
-        return _notifier;
-      };
-      (Object.seal||function(){})(_notifier);
-      return _notifier;
+    var _notifiers=[], _indexes=[];
+    extend.prototype.getNotifier = function(O){
+      var idx = _indexes.indexOf(O), notifier = idx>-1?_notifiers[idx]:false;
+      if(!notifier){
+        idx = _indexes.length;
+        _indexes[idx] = O;
+        notifier = _notifiers[idx] = new Notifier(O);
+      }
+      return notifier;
     };
     extend.prototype.observe = function(O, callback){
       return new Observer(O, callback);
     };
     extend.prototype.unobserve = function(O, callback){
       validateArguments(O, callback);
-      O.getNotifier().removeListener(callback);
+      Object.getNotifier(O).removeListener(callback);
     };
   })(Object, this);
 }
