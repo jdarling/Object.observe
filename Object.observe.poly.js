@@ -5,7 +5,11 @@
   Trying to stay as close to the spec as possible,
   this is a work in progress, feel free to comment/update
   
-  http://wiki.ecmascript.org/doku.php?id=harmony:observe
+  Specification:
+    http://wiki.ecmascript.org/doku.php?id=harmony:observe
+
+  Built using parts of:
+    https://github.com/tvcutsem/harmony-reflect/blob/master/examples/observer.js
 
   Limits so far;
     Built using polling... Will update again with polling/getter&setters to make things better at some point
@@ -17,18 +21,36 @@ if(!Object.observe){
         var s = toString.call(toString),
             u = typeof u;
         return typeof global.alert === "object" ?
-            function(f){
-                return s === toString.call(f) || (!!f && typeof f.toString == u && typeof f.valueOf == u && /^\s*\bfunction\b/.test("" + f));
-            }:
-            function(f){
-                return s === toString.call(f);
-            }
+          function(f){
+            return s === toString.call(f) || (!!f && typeof f.toString == u && typeof f.valueOf == u && /^\s*\bfunction\b/.test("" + f));
+          }:
+          function(f){
+            return s === toString.call(f);
+          }
         ;
     })(extend.prototype.toString);
     var isNumeric=function(n){
       return !isNaN(parseFloat(n)) && isFinite(n);
     };
-        
+    var sameValue = function(x, y){
+      if(x===y){
+        return x !== 0 || 1 / x === 1 / y;
+      }
+      return x !== x && y !== y;
+    };
+    var isAccessorDescriptor = function(desc){
+      if (typeof(desc) === 'undefined'){
+        return false;
+      }
+      return ('get' in desc || 'set' in desc);
+    };
+    var isDataDescriptor = function(desc){
+      if (typeof(desc) === 'undefined'){
+        return false;
+      }
+      return ('value' in desc || 'writable' in desc);
+    };
+      
     var validateArguments = function(O, callback){
       if(typeof(O)!=='object'){
         // Throw Error
@@ -78,7 +100,7 @@ if(!Object.observe){
     })();
     
     var Notifier = function(watching){
-      var _listeners = [], _updates = [], _updater = false, properties = [], values = [];
+    var _listeners = [], _updates = [], _updater = false, properties = [], values = [];
       var self = this;
       Object.defineProperty(self, '_watching', {
                   get: (function(watched){
@@ -89,7 +111,7 @@ if(!Object.observe){
                 });
       var wrapProperty = function(object, prop){
         var propType = typeof(object[prop]), descriptor = Object.getOwnPropertyDescriptor(object, prop);
-        if((prop==='getNotifier')||(!!descriptor.get)||(!descriptor.enumerable)){
+        if((prop==='getNotifier')||isAccessorDescriptor(descriptor)||(!descriptor.enumerable)){
           return false;
         }
         if((object instanceof Array)&&isNumeric(prop)){
@@ -101,13 +123,12 @@ if(!Object.observe){
         (function(idx, prop){
           properties[idx] = prop;
           values[idx] = object[prop];
-          // TODO: Change to use getters and setters on object property
           Object.defineProperty(object, prop, {
             get: function(){
               return values[idx];
             },
             set: function(value){
-              if(values[idx] !== value){
+              if(!sameValue(values[idx], value)){
                 Object.getNotifier(object).queueUpdate(object, prop, 'updated', values[idx]);
                 values[idx] = value;
               }
@@ -205,8 +226,8 @@ if(!Object.observe){
     };
     
     var _notifiers=[], _indexes=[];
-    extend.prototype.getNotifier = function(O){
-      var idx = _indexes.indexOf(O), notifier = idx>-1?_notifiers[idx]:false;
+    extend.getNotifier = function(O){
+    var idx = _indexes.indexOf(O), notifier = idx>-1?_notifiers[idx]:false;
       if(!notifier){
         idx = _indexes.length;
         _indexes[idx] = O;
@@ -214,12 +235,12 @@ if(!Object.observe){
       }
       return notifier;
     };
-    extend.prototype.observe = function(O, callback){
+    extend.observe = function(O, callback){
       return new Observer(O, callback);
     };
-    extend.prototype.unobserve = function(O, callback){
+    extend.unobserve = function(O, callback){
       validateArguments(O, callback);
-      Object.getNotifier(O).removeListener(callback);
+      extend.getNotifier(O).removeListener(callback);
     };
   })(Object, this);
 }
