@@ -240,7 +240,16 @@ if(!Object.observe){
     };
     extend.unobserve = function(O, callback){
       validateArguments(O, callback);
-      extend.getNotifier(O).removeListener(callback);
+      var idx = _indexes.indexOf(O),
+          notifier = idx>-1?_notifiers[idx]:false;
+      if (!notifier){
+        return;
+      }
+      notifier.removeListener(callback);
+      if (notifier.listeners().length === 0){
+        _indexes.splice(idx, 1);
+        _notifiers.splice(idx, 1);
+      }
     };
   })(Object, this);
 }
