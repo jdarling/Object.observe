@@ -1,0 +1,16 @@
+<html>
+  <head>
+  </head>
+  <body>
+    Shouldn't see anything in the console.  Can't observe a DOM node.
+    <div id="container"></div>
+    <script type="text/javascript" src="../Object.observe.poly.js"></script>
+    <script>
+      var myObject = document.getElementById('container');
+      Object.observe(myObject, function(updates){
+          console.log(updates);
+      });
+      myObject.innerHTML = 'test';
+    </script>
+  </body>
+</html>

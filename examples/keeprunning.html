@@ -1,0 +1,22 @@
+<html>
+  <head>
+  </head>
+  <body>
+    Its all in the console.
+
+    <script type="text/javascript" src="../Object.observe.poly.js"></script>
+    <script>
+      function f1(){console.log('f1'); return true;}
+      function f2(){console.log('f2');}
+      function f3(){console.log('f3'); return false;}
+      function f4(){console.log('f4');}
+
+      var o = {};
+      Object.observe(o,f1);
+      Object.observe(o,f2);
+      Object.observe(o,f3);
+      Object.observe(o,f4);
+      o["someProperty"] = "someValue";
+    </script>
+  </body>
+</html>

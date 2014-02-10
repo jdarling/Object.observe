@@ -4,7 +4,7 @@
 
   Trying to stay as close to the spec as possible,
   this is a work in progress, feel free to comment/update
-  
+
   Specification:
     http://wiki.ecmascript.org/doku.php?id=harmony:observe
 
@@ -13,6 +13,9 @@
 
   Limits so far;
     Built using polling... Will update again with polling/getter&setters to make things better at some point
+
+TODO:
+  Add support for Object.prototype.watch -> https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/watch
 */
 "use strict";
 if(!Object.observe){
@@ -29,6 +32,46 @@ if(!Object.observe){
           }
         ;
     })(extend.prototype.toString);
+    // isNode & isElement from http://stackoverflow.com/questions/384286/javascript-isdom-how-do-you-check-if-a-javascript-object-is-a-dom-object
+    //Returns true if it is a DOM node
+    function isNode(o){
+      return (
+        typeof Node === "object" ? o instanceof Node :
+        o && typeof o === "object" && typeof o.nodeType === "number" && typeof o.nodeName==="string"
+      );
+    }
+    //Returns true if it is a DOM element
+    function isElement(o){
+      return (
+        typeof HTMLElement === "object" ? o instanceof HTMLElement : //DOM2
+        o && typeof o === "object" && o !== null && o.nodeType === 1 && typeof o.nodeName==="string"
+    );
+    }
+    var _isImmediateSupported = (function(){
+      return !!global.setImmediate;
+    })();
+    var _doCheckCallback = (function(){
+      if(_isImmediateSupported){
+        return function(f){
+          return setImmediate(f);
+        };
+      }else{
+        return function(f){
+          return setTimeout(f, 10);
+        };
+      }
+    })();
+    var _clearCheckCallback = (function(){
+      if(_isImmediateSupported){
+        return function(id){
+          clearImmediate(id);
+        };
+      }else{
+        return function(id){
+          clearTimeout(id);
+        };
+      }
+    })();
     var isNumeric=function(n){
       return !isNaN(parseFloat(n)) && isFinite(n);
     };
@@ -50,7 +93,7 @@ if(!Object.observe){
       }
       return ('value' in desc || 'writable' in desc);
     };
-      
+
     var validateArguments = function(O, callback){
       if(typeof(O)!=='object'){
         // Throw Error
@@ -77,11 +120,11 @@ if(!Object.observe){
           Object.getNotifier(O)._checkPropertyListing();
         }
       };
-      
+
       Observer.prototype.deliverChangeRecords = function(O){
         Object.getNotifier(O).deliverChangeRecords();
       };
-      
+
       wraped.lastScanned = 0;
       var f = (function(wrapped){
               return function(){
@@ -91,18 +134,18 @@ if(!Object.observe){
                   takingTooLong=((new Date())-startTime)>100; // make sure we don't take more than 100 milliseconds to scan all objects
                 }
                 wrapped.lastScanned=i<l?i:0; // reset wrapped so we can make sure that we pick things back up
-                setTimeout(f, 100);
+                _doCheckCallback(f);
               };
             })(wraped);
-      setTimeout(f, 100);
-      
+      _doCheckCallback(f);
       return Observer;
     })();
-    
+
     var Notifier = function(watching){
     var _listeners = [], _updates = [], _updater = false, properties = [], values = [];
       var self = this;
       Object.defineProperty(self, '_watching', {
+                  enumerable: true,
                   get: (function(watched){
                     return function(){
                       return watched;
@@ -140,8 +183,12 @@ if(!Object.observe){
       self._checkPropertyListing = function(dontQueueUpdates){
         var object = self._watching, keys = Object.keys(object), i=0, l=keys.length;
         var newKeys = [], oldKeys = properties.slice(0), updates = [];
-        var prop, queueUpdates = !dontQueueUpdates, propType, value, idx;
-        
+        var prop, queueUpdates = !dontQueueUpdates, propType, value, idx, aLength;
+
+        if(object instanceof Array){
+          aLength = properties.length;
+        }
+
         for(i=0; i<l; i++){
           prop = keys[i];
           value = object[prop];
@@ -162,6 +209,13 @@ if(!Object.observe){
             oldKeys.splice(oldKeys.indexOf(prop), 1);
           }
         }
+
+        if(object instanceof Array && object.length !== aLength){
+          if(queueUpdates){
+            self.queueUpdate(object, 'length', 'updated', aLength, object);
+          }
+        }
+
         if(queueUpdates){
           l = oldKeys.length;
           for(i=0; i<l; i++){
@@ -202,29 +256,46 @@ if(!Object.observe){
           _updates.push(update);
         }
         if(_updater){
-          clearTimeout(_updater);
+          _clearCheckCallback(_updater);
         }
-        _updater = setTimeout(function(){
+        _updater = _doCheckCallback(function(){
           _updater = false;
           self.deliverChangeRecords();
-        }, 100);
+        });
       };
       self.deliverChangeRecords = function(){
-        var i = 0, l = _listeners.length, keepRunning = true;
+        var i = 0, l = _listeners.length,
+            //keepRunning = true, removed as it seems the actual implementation doesn't do this
+            // In response to BUG #5
+            retval;
+        for(i=0; i<l; i++){
+          if(_listeners[i]){
+            if(_listeners[i]===console.log){
+              console.log(_updates);
+            }else{
+              _listeners[i](_updates);
+            }
+          }
+        }
+        /*
         for(i=0; i<l&&keepRunning; i++){
           if(typeof(_listeners[i])==='function'){
             if(_listeners[i]===console.log){
               console.log(_updates);
             }else{
-              keepRunning = !(_listeners[i](_updates));
+              retval = _listeners[i](_updates);
+              if(typeof(retval) === 'boolean'){
+                keepRunning = retval;
+              }
             }
           }
         }
+        */
         _updates=[];
       };
       self._checkPropertyListing(true);
     };
-    
+
     var _notifiers=[], _indexes=[];
     extend.getNotifier = function(O){
     var idx = _indexes.indexOf(O), notifier = idx>-1?_notifiers[idx]:false;
@@ -236,7 +307,10 @@ if(!Object.observe){
       return notifier;
     };
     extend.observe = function(O, callback){
-      return new Observer(O, callback);
+      // For Bug 4, can't observe DOM elements tested against canry implementation and matches
+      if(!isElement(O)){
+        return new Observer(O, callback);
+      }
     };
     extend.unobserve = function(O, callback){
       validateArguments(O, callback);

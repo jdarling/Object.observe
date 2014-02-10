@@ -1,0 +1,16 @@
+<html>
+  <head>
+  </head>
+  <body>
+    Its all in the console.
+
+    <script type="text/javascript" src="../Object.observe.poly.js"></script>
+    <script>
+arr = [0, 1, 2];
+Object.observe(arr, function (changes) {
+  console.log(JSON.stringify(changes, null, '  '));
+});
+arr.push(3);
+    </script>
+  </body>
+</html>
