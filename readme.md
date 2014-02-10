@@ -4,11 +4,16 @@ Thanks to my new job I have a lot more time to devote to things like this librar
 
 Started as GIST: https://gist.github.com/4173299
 
-Tested against Chromium build with Object.observe and acts EXACTLY the same, though Chromium build is MUCH faster.
+Tested against Chromium build with Object.observe and acts EXACTLY the same for the basics, though Chromium build is MUCH faster.
 
 Trying to stay as close to the spec as possible, this is a work in progress, feel free to comment/update
 
 http://wiki.ecmascript.org/doku.php?id=harmony:observe
+
+TODO
+----
+
+The spec has changed a lot since I origionally wrote this, need to go back and add in a lot of things like custom update types and other fun.  For now though it seems to suffice.
 
 Limits so far
 --------------
