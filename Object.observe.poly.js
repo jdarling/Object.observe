@@ -172,7 +172,7 @@ if(!Object.observe){
             },
             set: function(value){
               if(!sameValue(values[idx], value)){
-                Object.getNotifier(object).queueUpdate(object, prop, 'updated', values[idx]);
+                Object.getNotifier(object).queueUpdate(object, prop, 'update', values[idx]);
                 values[idx] = value;
               }
             }
@@ -195,13 +195,13 @@ if(!Object.observe){
           propType = typeof(value);
           if((idx = properties.indexOf(prop))===-1){
             if(wrapProperty(object, prop)&&queueUpdates){
-              self.queueUpdate(object, prop, 'new', null, object[prop]);
+              self.queueUpdate(object, prop, 'add', null, object[prop]);
             }
           }else{
             if((object instanceof Array)&&(isNumeric(prop))){
               if(values[idx] !== value){
                 if(queueUpdates){
-                  self.queueUpdate(object, prop, 'updated', values[idx], value);
+                  self.queueUpdate(object, prop, 'update', values[idx], value);
                 }
                 values[idx] = value;
               }
@@ -212,7 +212,7 @@ if(!Object.observe){
 
         if(object instanceof Array && object.length !== aLength){
           if(queueUpdates){
-            self.queueUpdate(object, 'length', 'updated', aLength, object);
+            self.queueUpdate(object, 'length', 'update', aLength, object);
           }
         }
 
@@ -220,7 +220,7 @@ if(!Object.observe){
           l = oldKeys.length;
           for(i=0; i<l; i++){
             idx = properties.indexOf(oldKeys[i]);
-            self.queueUpdate(object, oldKeys[i], 'deleted', values[idx]);
+            self.queueUpdate(object, oldKeys[i], 'delete', values[idx]);
             properties.splice(idx,1);
             values.splice(idx,1);
           };
