@@ -93,8 +93,10 @@ if(!Object.observe){
       }
       return ('value' in desc || 'writable' in desc);
     };
+    
+    var validAcceptKeys = ["add", "update", "delete", "reconfigure", "setPrototype", "preventExtensions"];
 
-    var validateArguments = function(O, callback){
+    var validateArguments = function(O, callback, accept){
       if(typeof(O)!=='object'){
         // Throw Error
         throw new TypeError("Object.observeObject called on non-object");
@@ -107,13 +109,29 @@ if(!Object.observe){
         // Throw Error
         throw new TypeError("Object.observeObject: Expecting unfrozen function");
       }
+      if (accept !== undefined) {
+        if (!Array.isArray(accept)) {
+          throw new TypeError("Object.observeObject: Expecting acceptList in the form of an array");
+        }
+        else {
+          for (var i = 0, acceptLength = accept.length; i < acceptLength; i++) {
+            if (validAcceptKeys.indexOf(accept[i]) === -1) {
+              accept[i] = null;
+            }
+          }
+          var index;
+          while (index = accept.indexOf(null) !== -1) {
+            accept.splice(index, 1);
+          }
+        }
+      }
     };
 
     var Observer = (function(){
       var wraped = [];
-      var Observer = function(O, callback){
-        validateArguments(O, callback);
-        Object.getNotifier(O).addListener(callback);
+      var Observer = function(O, callback, accept){
+        validateArguments(O, callback, accept);
+        Object.getNotifier(O).addListener(callback, accept);
         if(wraped.indexOf(O)===-1){
           wraped.push(O);
         }else{
@@ -142,7 +160,7 @@ if(!Object.observe){
     })();
 
     var Notifier = function(watching){
-    var _listeners = [], _updates = [], _updater = false, properties = [], values = [];
+    var _listeners = [], _acceptLists = [], _updates = [], _updater = false, properties = [], values = [];
       var self = this;
       Object.defineProperty(self, '_watching', {
                   enumerable: true,
@@ -226,16 +244,21 @@ if(!Object.observe){
           };
         }
       };
-      self.addListener = function(callback){
+      self.addListener = function(callback, accept){
         var idx = _listeners.indexOf(callback);
         if(idx===-1){
           _listeners.push(callback);
+          _acceptLists.push(accept);
+        }
+        else {
+          _acceptLists[idx] = accept;
         }
       };
       self.removeListener = function(callback){
         var idx = _listeners.indexOf(callback);
         if(idx>-1){
           _listeners.splice(idx, 1);
+          _acceptLists.splice(idx, 1);
         }
       };
       self.listeners = function(){
@@ -270,10 +293,24 @@ if(!Object.observe){
             retval;
         for(i=0; i<l; i++){
           if(_listeners[i]){
-            if(_listeners[i]===console.log){
-              console.log(_updates);
-            }else{
-              _listeners[i](_updates);
+            var currentUpdates;
+            if (_acceptLists[i]) {
+              currentUpdates = [];
+              for (var j = 0, updatesLength = _updates.length; j < updatesLength; j++) {
+                if (_acceptLists[i].indexOf(_updates[j].type) !== -1) {
+                  currentUpdates.push(_updates[j]);
+                }
+              }
+            }
+            else {
+              currentUpdates = _updates;
+            }
+            if (currentUpdates.length) {
+              if(_listeners[i]===console.log){
+                console.log(currentUpdates);
+              }else{
+                _listeners[i](currentUpdates);
+              }
             }
           }
         }
@@ -306,10 +343,10 @@ if(!Object.observe){
       }
       return notifier;
     };
-    extend.observe = function(O, callback){
+    extend.observe = function(O, callback, accept){
       // For Bug 4, can't observe DOM elements tested against canry implementation and matches
       if(!isElement(O)){
-        return new Observer(O, callback);
+        return new Observer(O, callback, accept);
       }
     };
     extend.unobserve = function(O, callback){
