@@ -94,8 +94,6 @@ if(!Object.observe){
       return ('value' in desc || 'writable' in desc);
     };
     
-    var validAcceptKeys = ["add", "update", "delete", "reconfigure", "setPrototype", "preventExtensions"];
-
     var validateArguments = function(O, callback, accept){
       if(typeof(O)!=='object'){
         // Throw Error
@@ -113,17 +111,6 @@ if(!Object.observe){
         if (!Array.isArray(accept)) {
           throw new TypeError("Object.observeObject: Expecting acceptList in the form of an array");
         }
-        else {
-          for (var i = 0, acceptLength = accept.length; i < acceptLength; i++) {
-            if (validAcceptKeys.indexOf(accept[i]) === -1) {
-              accept[i] = null;
-            }
-          }
-          var index;
-          while (index = accept.indexOf(null) !== -1) {
-            accept.splice(index, 1);
-          }
-        }
       }
     };
 
@@ -131,6 +118,9 @@ if(!Object.observe){
       var wraped = [];
       var Observer = function(O, callback, accept){
         validateArguments(O, callback, accept);
+        if (!accept) {
+          accept = ["add", "update", "delete", "reconfigure", "setPrototype", "preventExtensions"];
+        }
         Object.getNotifier(O).addListener(callback, accept);
         if(wraped.indexOf(O)===-1){
           wraped.push(O);
@@ -329,6 +319,13 @@ if(!Object.observe){
         }
         */
         _updates=[];
+      };
+      self.notify = function(changeRecord) {
+        if (typeof changeRecord !== "object" || typeof changeRecord.type !== "string") {
+          throw new TypeError("Invalid changeRecord with non-string 'type' property");
+        }
+        changeRecord.object = watching;
+        self.queueUpdates([changeRecord]);
       };
       self._checkPropertyListing(true);
     };
