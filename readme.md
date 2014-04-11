@@ -40,6 +40,8 @@ Examples and Usage
 Latest Updates
 --------------
 
+    * Added Notifier.notify() with custom types support by klimlee
+    * Added accept list support by klimlee
     * Stopped monitoring DOM nodes, Canary can't do it and neither should the shim.
     * Added in support for setImmediate if it is available.
     * Memory leak fix by Moshemal
