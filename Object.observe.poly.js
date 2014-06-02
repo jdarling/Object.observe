@@ -194,7 +194,7 @@ if(!Object.observe){
         var prop, queueUpdates = !dontQueueUpdates, propType, value, idx, aLength;
 
         if(object instanceof Array){
-          aLength = properties.length;
+          aLength = object.length;
         }
 
         for(i=0; i<l; i++){
