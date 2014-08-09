@@ -206,7 +206,7 @@ if(!Object.observe){
               self.queueUpdate(object, prop, 'add', null, object[prop]);
             }
           }else{
-            if((object instanceof Array)&&(isNumeric(prop))){
+            if(!(object instanceof Array)||(isNumeric(prop))){
               if(values[idx] !== value){
                 if(queueUpdates){
                   self.queueUpdate(object, prop, 'update', values[idx], value);
