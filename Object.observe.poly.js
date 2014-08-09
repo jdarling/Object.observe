@@ -138,8 +138,14 @@ if(!Object.observe){
               return function(){
                 var i = 0, l = wrapped.length, startTime = new Date(), takingTooLong=false;
                 for(i=wrapped.lastScanned; (i<l)&&(!takingTooLong); i++){
-                  Object.getNotifier(wrapped[i])._checkPropertyListing();
-                  takingTooLong=((new Date())-startTime)>100; // make sure we don't take more than 100 milliseconds to scan all objects
+                  if(_indexes.indexOf(wrapped[i]) > -1){
+                    Object.getNotifier(wrapped[i])._checkPropertyListing();
+                    takingTooLong=((new Date())-startTime)>100; // make sure we don't take more than 100 milliseconds to scan all objects
+                  }else{
+                    wrapped.splice(i, 1);
+                    i--;
+                    l--;
+                  }
                 }
                 wrapped.lastScanned=i<l?i:0; // reset wrapped so we can make sure that we pick things back up
                 _doCheckCallback(f);
