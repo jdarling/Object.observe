@@ -1,0 +1,20 @@
+<html>
+  <head>
+    <script type="text/javascript" src="../Object.observe.poly.js"></script>
+  </head>
+  <body>
+    Its all in the console.
+    Expecting either a delete then add, or an update.
+    <script type="text/javascript">
+      var data = {
+        foo: 'bar'
+      };
+      function callback() {
+        console.log(arguments);
+      }
+      Object.observe(data, callback);
+      delete data.foo;
+      data.foo = 'foobar';
+    </script>
+  </body>
+</html>
