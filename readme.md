@@ -29,6 +29,21 @@ delete myObject.foo;
 
   The observer function would never see the addition of foo since it was deleted so quickly.
 
+Testing
+-------
+
+To run the tests first make sure you have Node.js installed.  Then use NPM to install Karam and all dependencies:
+
+```
+npm install
+```
+
+Finally run the tests with:
+
+```
+npm test
+```
+
 Planned Updates
 ---------------
   For FireFox using Proxies will result in better performance.  Will look into this more.
@@ -40,6 +55,8 @@ Examples and Usage
 Latest Updates
 --------------
 
+    * Memory leak fixed with PR #16
+    * Tests added to project thanks to mikeb1rd also part of PR #16
     * Added Notifier.notify() with custom types support by klimlee
     * Added accept list support by klimlee
     * Stopped monitoring DOM nodes, Canary can't do it and neither should the shim.
