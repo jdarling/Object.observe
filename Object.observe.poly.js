@@ -19,7 +19,7 @@ TODO:
 */
 if(!Object.observe){
   (function(extend, global){
-//    "use strict";
+    "use strict";
     var isCallable = (function(toString){
         var s = toString.call(toString),
             u = typeof u;
