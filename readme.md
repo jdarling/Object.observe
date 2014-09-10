@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/jdarling/Object.observe.svg?branch=master)](https://travis-ci.org/jdarling/Object.observe)
+
 Object.observe Polyfill/shim
 ============================
 Thanks to my new job I have a lot more time to devote to things like this library.  It has gone a REALLY long time without updates and there is a lot that can be done to make it more functional.  I hope to be spending more time on it soon, but for now I've fixed all the bugs that I know of and have been reported.  Thanks to everyone for their reports, and keep them coming if you find one.
