@@ -200,7 +200,46 @@ describe('multiple', function() {
     });
 
     it('should not aggregate an update then delete to a single delete for an object', function(done) {
+      var subject = {},
+          value1 = sinon.stub(),
+          value2 = sinon.stub(),
+          steps = [
+            function(){
+              subject.foo = value2;
+            },
+            function(){
+              delete subject.foo;
+            },
+            function(){
+              console.log('done: ', handler.changes.length);
+              sinon.assert(handler.changes.length===2);
+              //sinon.assert.calledWithMatch(handler, aChangeMatching('update', 'foo', undefined, value1));
+              //sinon.assert.calledWithMatch(handler, aChangeMatching('delete', 'foo', undefined, value2));
+              console.log(handler.changes[0]);
+              console.log('calling done()')
+              done();
+            }
+          ],
+          next = function(){
+            var f = steps.shift();
+            if(f){
+              return f();
+            }
+          },
+          handler = sinon.stub(function(changes){
+            handler.changes = handler.changes.concat(changes);
+            console.log('calling next');
+            next();
+          };
+      handler.changes = [];
 
+      subject.foo = value1;
+      Object.observe(subject, handler);
+      next();
+
+
+
+/*
         var subject = {},
             value1 = sinon.stub(),
             value2 = sinon.stub(),
@@ -220,6 +259,7 @@ describe('multiple', function() {
             sinon.assert.calledWithMatch(handler, aChangeMatching('delete', 'foo', undefined, value2));
             done();
         }, 100);
+*/
     });
 
     it('should not aggregate an update then delete to a single delete for an array', function(done) {

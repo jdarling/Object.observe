@@ -14,7 +14,7 @@ module.exports = function(config) {
         files: [
             'Object.observe.poly.js',
             'test/helpers.js',
-            {pattern: 'test/*.test.js'}
+            {pattern: 'test/test.*.js'}
         ],
 
 
@@ -51,16 +51,17 @@ module.exports = function(config) {
 
 
         // enable / disable watching file and executing tests whenever any file changes
-        autoWatch: false,
+        autoWatch: true,
 
 
         // start these browsers
         // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
-        browsers: ['PhantomJS', 'Chrome', 'Safari'],
+        //browsers: ['PhantomJS', 'Chrome', 'Safari', 'Firefox'],
+        browsers: ['Chrome'],
 
 
         // Continuous Integration mode
         // if true, Karma captures browsers, runs the tests and exits
-        singleRun: true
+        singleRun: false
     });
 };

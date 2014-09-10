@@ -19,29 +19,29 @@ TODO:
 */
 if(!Object.observe){
   (function(extend, global){
-    "use strict";
+//    "use strict";
     var isCallable = (function(toString){
         var s = toString.call(toString),
             u = typeof u;
         return typeof global.alert === "object" ?
-          function(f){
+          function isCallable(f){
             return s === toString.call(f) || (!!f && typeof f.toString == u && typeof f.valueOf == u && /^\s*\bfunction\b/.test("" + f));
           }:
-          function(f){
+          function isCallable(f){
             return s === toString.call(f);
           }
         ;
     })(extend.prototype.toString);
     // isNode & isElement from http://stackoverflow.com/questions/384286/javascript-isdom-how-do-you-check-if-a-javascript-object-is-a-dom-object
     //Returns true if it is a DOM node
-    function isNode(o){
+    var isNode = function isNode(o){
       return (
         typeof Node === "object" ? o instanceof Node :
         o && typeof o === "object" && typeof o.nodeType === "number" && typeof o.nodeName==="string"
       );
     }
     //Returns true if it is a DOM element
-    function isElement(o){
+    var isElement = function isElement(o){
       return (
         typeof HTMLElement === "object" ? o instanceof HTMLElement : //DOM2
         o && typeof o === "object" && o !== null && o.nodeType === 1 && typeof o.nodeName==="string"
@@ -52,49 +52,49 @@ if(!Object.observe){
     })();
     var _doCheckCallback = (function(){
       if(_isImmediateSupported){
-        return function(f){
+        return function _doCheckCallback(f){
           return setImmediate(f);
         };
       }else{
-        return function(f){
+        return function _doCheckCallback(f){
           return setTimeout(f, 10);
         };
       }
     })();
     var _clearCheckCallback = (function(){
       if(_isImmediateSupported){
-        return function(id){
+        return function _clearCheckCallback(id){
           clearImmediate(id);
         };
       }else{
-        return function(id){
+        return function _clearCheckCallback(id){
           clearTimeout(id);
         };
       }
     })();
-    var isNumeric=function(n){
+    var isNumeric=function isNumeric(n){
       return !isNaN(parseFloat(n)) && isFinite(n);
     };
-    var sameValue = function(x, y){
+    var sameValue = function sameValue(x, y){
       if(x===y){
         return x !== 0 || 1 / x === 1 / y;
       }
       return x !== x && y !== y;
     };
-    var isAccessorDescriptor = function(desc){
+    var isAccessorDescriptor = function isAccessorDescriptor(desc){
       if (typeof(desc) === 'undefined'){
         return false;
       }
       return ('get' in desc || 'set' in desc);
     };
-    var isDataDescriptor = function(desc){
+    var isDataDescriptor = function isDataDescriptor(desc){
       if (typeof(desc) === 'undefined'){
         return false;
       }
       return ('value' in desc || 'writable' in desc);
     };
 
-    var validateArguments = function(O, callback, accept){
+    var validateArguments = function validateArguments(O, callback, accept){
       if(typeof(O)!=='object'){
         // Throw Error
         throw new TypeError("Object.observeObject called on non-object");
@@ -114,9 +114,9 @@ if(!Object.observe){
       }
     };
 
-    var Observer = (function(){
+    var Observer = (function Observer(){
       var wraped = [];
-      var Observer = function(O, callback, accept){
+      var Observer = function Observer(O, callback, accept){
         validateArguments(O, callback, accept);
         if (!accept) {
           accept = ["add", "update", "delete", "reconfigure", "setPrototype", "preventExtensions"];
@@ -129,13 +129,13 @@ if(!Object.observe){
         }
       };
 
-      Observer.prototype.deliverChangeRecords = function(O){
+      Observer.prototype.deliverChangeRecords = function Observer_deliverChangeRecords(O){
         Object.getNotifier(O).deliverChangeRecords();
       };
 
       wraped.lastScanned = 0;
-      var f = (function(wrapped){
-              return function(){
+      var f = (function f(wrapped){
+              return function _f(){
                 var i = 0, l = wrapped.length, startTime = new Date(), takingTooLong=false;
                 for(i=wrapped.lastScanned; (i<l)&&(!takingTooLong); i++){
                   if(_indexes.indexOf(wrapped[i]) > -1){
@@ -155,7 +155,7 @@ if(!Object.observe){
       return Observer;
     })();
 
-    var Notifier = function(watching){
+    var Notifier = function Notifier(watching){
     var _listeners = [], _acceptLists = [], _updates = [], _updater = false, properties = [], values = [];
       var self = this;
       Object.defineProperty(self, '_watching', {
@@ -166,7 +166,7 @@ if(!Object.observe){
                     };
                   })(watching)
                 });
-      var wrapProperty = function(object, prop){
+      var wrapProperty = function wrapProperty(object, prop){
         var propType = typeof(object[prop]), descriptor = Object.getOwnPropertyDescriptor(object, prop);
         if((prop==='getNotifier')||isAccessorDescriptor(descriptor)||(!descriptor.enumerable)){
           return false;
@@ -194,7 +194,7 @@ if(!Object.observe){
         })(properties.length, prop);
         return true;
       };
-      self._checkPropertyListing = function(dontQueueUpdates){
+      self._checkPropertyListing = function _checkPropertyListing(dontQueueUpdates){
         var object = self._watching, keys = Object.keys(object), i=0, l=keys.length;
         var newKeys = [], oldKeys = properties.slice(0), updates = [];
         var prop, queueUpdates = !dontQueueUpdates, propType, value, idx, aLength;
@@ -240,7 +240,7 @@ if(!Object.observe){
           };
         }
       };
-      self.addListener = function(callback, accept){
+      self.addListener = function Notifier_addListener(callback, accept){
         var idx = _listeners.indexOf(callback);
         if(idx===-1){
           _listeners.push(callback);
@@ -250,17 +250,17 @@ if(!Object.observe){
           _acceptLists[idx] = accept;
         }
       };
-      self.removeListener = function(callback){
+      self.removeListener = function Notifier_removeListener(callback){
         var idx = _listeners.indexOf(callback);
         if(idx>-1){
           _listeners.splice(idx, 1);
           _acceptLists.splice(idx, 1);
         }
       };
-      self.listeners = function(){
+      self.listeners = function Notifier_listeners(){
         return _listeners;
       };
-      self.queueUpdate = function(what, prop, type, was){
+      self.queueUpdate = function Notifier_queueUpdate(what, prop, type, was){
         this.queueUpdates([{
           type: type,
           object: what,
@@ -268,7 +268,7 @@ if(!Object.observe){
           oldValue: was
         }]);
       };
-      self.queueUpdates = function(updates){
+      self.queueUpdates = function Notifier_queueUpdates(updates){
         var self = this, i = 0, l = updates.length||0, update;
         for(i=0; i<l; i++){
           update = updates[i];
@@ -282,7 +282,7 @@ if(!Object.observe){
           self.deliverChangeRecords();
         });
       };
-      self.deliverChangeRecords = function(){
+      self.deliverChangeRecords = function Notifier_deliverChangeRecords(){
         var i = 0, l = _listeners.length,
             //keepRunning = true, removed as it seems the actual implementation doesn't do this
             // In response to BUG #5
@@ -310,23 +310,9 @@ if(!Object.observe){
             }
           }
         }
-        /*
-        for(i=0; i<l&&keepRunning; i++){
-          if(typeof(_listeners[i])==='function'){
-            if(_listeners[i]===console.log){
-              console.log(_updates);
-            }else{
-              retval = _listeners[i](_updates);
-              if(typeof(retval) === 'boolean'){
-                keepRunning = retval;
-              }
-            }
-          }
-        }
-        */
         _updates=[];
       };
-      self.notify = function(changeRecord) {
+      self.notify = function Notifier_notify(changeRecord) {
         if (typeof changeRecord !== "object" || typeof changeRecord.type !== "string") {
           throw new TypeError("Invalid changeRecord with non-string 'type' property");
         }
@@ -337,7 +323,7 @@ if(!Object.observe){
     };
 
     var _notifiers=[], _indexes=[];
-    extend.getNotifier = function(O){
+    extend.getNotifier = function Object_getNotifier(O){
     var idx = _indexes.indexOf(O), notifier = idx>-1?_notifiers[idx]:false;
       if(!notifier){
         idx = _indexes.length;
@@ -346,13 +332,13 @@ if(!Object.observe){
       }
       return notifier;
     };
-    extend.observe = function(O, callback, accept){
+    extend.observe = function Object_observe(O, callback, accept){
       // For Bug 4, can't observe DOM elements tested against canry implementation and matches
       if(!isElement(O)){
         return new Observer(O, callback, accept);
       }
     };
-    extend.unobserve = function(O, callback){
+    extend.unobserve = function Object_unobserve(O, callback){
       validateArguments(O, callback);
       var idx = _indexes.indexOf(O),
           notifier = idx>-1?_notifiers[idx]:false;
