@@ -66,7 +66,6 @@ describe('Array tests', function(){
   it('Should notify when items are removed from the array using pop', function(done){
     var handler = function(changes){
           Object.unobserve(subject, handler);
-          console.log(changes.length);
           assert(changes.length===2); // 1 for the delete and one for the length change
           aChangeMatches(changes, {type: 'delete', name: '2', oldValue: 3});
           aChangeMatches(changes, {type: 'update', name: 'length', oldValue: 3});
