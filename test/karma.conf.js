@@ -56,7 +56,10 @@ module.exports = function(config) {
 
         // start these browsers
         // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
-        browsers: ['PhantomJS', 'Chrome', 'Firefox', 'Safari'],
+        // For local you might want to use:
+        // browsers: ['PhantomJS', 'Chrome', 'Firefox', 'Safari'],
+        // Travis doesn't support all those, so just use PhantomJS and Firefox
+        browsers: ['PhantomJS', 'Firefox'],
 
 
         // Continuous Integration mode
