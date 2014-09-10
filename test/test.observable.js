@@ -1,7 +1,6 @@
 'use strict';
 
 describe('method', function() {
-/*
   beforeEach(function() {
     sinon.spy(Object, 'observe');
     sinon.spy(Object, 'unobserve');
@@ -67,5 +66,4 @@ describe('method', function() {
       Object.observe('1234');
     });
   });
-*/
 });
