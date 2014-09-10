@@ -15,10 +15,8 @@ describe('Array tests', function(){
     var handler = function(changes){
           Object.unobserve(subject, handler);
           assert(changes.length===2); // 1 for the change and one for the length change
-          assert(changes[0].type==='add'); // First one for the change
-          assert(changes[1].type==='update');
-          assert(changes[1].name==='length');
-          assert(changes[1].oldValue===0);
+          aChangeMatches(changes, {type: 'add', name: '0'});
+          aChangeMatches(changes, {type: 'update', name: 'length', oldValue: 0});
           done();
         },
         subject = [];
@@ -30,10 +28,8 @@ describe('Array tests', function(){
     var handler = function(changes){
           Object.unobserve(subject, handler);
           assert(changes.length===2); // 1 for the change and one for the length change
-          assert(changes[0].type==='add'); // First one for the change
-          assert(changes[1].type==='update');
-          assert(changes[1].name==='length');
-          assert(changes[1].oldValue===0);
+          aChangeMatches(changes, {type: 'add', name: '0'});
+          aChangeMatches(changes, {type: 'update', name: 'length', oldValue: 0});
           done();
         },
         subject = [];
@@ -45,10 +41,8 @@ describe('Array tests', function(){
     var handler = function(changes){
           Object.unobserve(subject, handler);
           assert(changes.length===2); // 1 for the change and one for the length change
-          assert(changes[0].type==='add'); // First one for the change
-          assert(changes[1].type==='update');
-          assert(changes[1].name==='length');
-          assert(changes[1].oldValue===0);
+          aChangeMatches(changes, {type: 'add', name: '0'});
+          aChangeMatches(changes, {type: 'update', name: 'length', oldValue: 0});
           done();
         },
         subject = [];
@@ -60,10 +54,8 @@ describe('Array tests', function(){
     var handler = function(changes){
           Object.unobserve(subject, handler);
           assert(changes.length===2); // 1 for the change and one for the length change
-          assert(changes[0].type==='add'); // First one for the change
-          assert(changes[1].type==='update');
-          assert(changes[1].name==='length');
-          assert(changes[1].oldValue===0);
+          aChangeMatches(changes, {type: 'add', name: '5'});
+          aChangeMatches(changes, {type: 'update', name: 'length', oldValue: 0});
           done();
         },
         subject = [];
@@ -74,12 +66,10 @@ describe('Array tests', function(){
   it('Should notify when items are removed from the array using pop', function(done){
     var handler = function(changes){
           Object.unobserve(subject, handler);
-          assert(changes.length===2); // 1 for the change and one for the length change
-          assert(changes[0].type==='delete'); // First one for the change
-          assert(changes[0].oldValue===3);
-          assert(changes[1].type==='update');
-          assert(changes[1].name==='length');
-          assert(changes[1].oldValue===3);
+          console.log(changes.length);
+          assert(changes.length===2); // 1 for the delete and one for the length change
+          aChangeMatches(changes, {type: 'delete', name: '2', oldValue: 3});
+          aChangeMatches(changes, {type: 'update', name: 'length', oldValue: 3});
           done();
         },
         subject = [1, 2, 3];
@@ -90,12 +80,11 @@ describe('Array tests', function(){
   it('Should notify when items are removed from the array using shift', function(done){
     var handler = function(changes){
           Object.unobserve(subject, handler);
-          assert(changes.length===4); // 1 for the change and one for the length change
-          assert(changes[0].type==='update'); // First one for the change
-          assert(changes[0].oldValue===1);
-          assert(changes[3].type==='update');
-          assert(changes[3].name==='length');
-          assert(changes[3].oldValue===3);
+          assert(changes.length===4); // 3 for the removal change and 1 for the length change
+          aChangeMatches(changes, {type: 'update', name: '0', oldValue: 1});
+          aChangeMatches(changes, {type: 'update', name: '1', oldValue: 2});
+          aChangeMatches(changes, {type: 'delete', name: '2', oldValue: 3})
+          aChangeMatches(changes, {type: 'update', name: 'length', oldValue: 3});
           done();
         },
         subject = [1, 2, 3];
@@ -106,9 +95,8 @@ describe('Array tests', function(){
   it('Should notify when items are removed from the array using delete', function(done){
     var handler = function(changes){
           Object.unobserve(subject, handler);
-          assert(changes.length===1); // 1 for the change and one for the length change
-          assert(changes[0].type==='delete'); // First one for the change
-          assert(changes[0].oldValue===2);
+          assert(changes.length===1); // 1 for the delete, no change in length
+          aChangeMatches(changes, {type: 'delete', name: '1', oldValue: 2})
           done();
         },
         subject = [1, 2, 3];
@@ -120,12 +108,25 @@ describe('Array tests', function(){
     var handler = function(changes){
           Object.unobserve(subject, handler);
           assert(changes.length===3); // 1 for the change and one for the length change
-          assert(changes[0].type==='update'); // First one for the change
-          assert(changes[0].oldValue===2);
+          aChangeMatches(changes, {type: 'update', name: '1', oldValue: 2});
+          aChangeMatches(changes, {type: 'delete', name: '2', oldValue: 3});
+          aChangeMatches(changes, {type: 'update', name: 'length', oldValue: 3});
           done();
         },
         subject = [1, 2, 3];
     Object.observe(subject, handler);
     subject.splice(1, 1);
+  });
+
+  it('Should notify when an array item is updated', function(done){
+    var handler = function(changes){
+          Object.unobserve(subject, handler);
+          assert(changes.length===1); // 1 for the change and one for the length change
+          aChangeMatches(changes, {type: 'update', name: '1', oldValue: 2});
+          done();
+        },
+        subject = [1, 2, 3];
+    Object.observe(subject, handler);
+    subject[1] = 4;
   });
 });

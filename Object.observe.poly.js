@@ -148,7 +148,7 @@ if(!Object.observe){
                   }
                 }
                 wrapped.lastScanned=i<l?i:0; // reset wrapped so we can make sure that we pick things back up
-                _doCheckCallback(f);
+                _doCheckCallback(_f);
               };
             })(wraped);
       _doCheckCallback(f);
@@ -200,7 +200,8 @@ if(!Object.observe){
         var prop, queueUpdates = !dontQueueUpdates, propType, value, idx, aLength;
 
         if(object instanceof Array){
-          aLength = object.length;
+          aLength = self._oldLength;//object.length;
+          //aLength = object.length;
         }
 
         for(i=0; i<l; i++){
@@ -228,6 +229,7 @@ if(!Object.observe){
           if(queueUpdates){
             self.queueUpdate(object, 'length', 'update', aLength, object);
           }
+          self._oldLength = object.length;
         }
 
         if(queueUpdates){

@@ -50,24 +50,6 @@ describe('single', function() {
         }, 100);
     });
 
-    it('should call the handler when an array item is added', function(done) {
-
-        var subject = [],
-            handler = sinon.stub();
-
-        Object.observe(subject, handler);
-
-        subject.push(123);
-
-        setTimeout(function() {
-            sinon.assert.calledOnce(handler);
-            sinon.assert.calledWithMatch(handler, numberOfChangesMatching(2));
-            sinon.assert.calledWithMatch(handler, aChangeMatching('add', '0', 123));
-            sinon.assert.calledWithMatch(handler, aChangeMatching('update', 'length', 1));
-            done();
-        }, 100);
-    });
-
     it('should call the handler when an object property is updated', function(done) {
 
         var subject = {},
@@ -110,32 +92,13 @@ describe('single', function() {
         }, 100);
     });
 
-    it('should call the handler when an array item is updated', function(done) {
-
-        var subject = [],
-            handler = sinon.stub();
-
-        subject.push('bar');
-        
-        Object.observe(subject, handler);
-
-        subject[0] = 'barbar';
-
-        setTimeout(function() {
-            sinon.assert.calledOnce(handler);
-            sinon.assert.calledWithMatch(handler, numberOfChangesMatching(1));
-            sinon.assert.calledWithMatch(handler, aChangeMatching('update', '0', 'barbar', 'bar'));
-            done();
-        }, 100);
-    });
-
     it('should call the handler when an object property is deleted', function(done) {
 
         var subject = {},
             handler = sinon.stub();
 
         subject.foo = undefined;
-        
+
         Object.observe(subject, handler);
 
         delete subject.foo;
@@ -170,23 +133,4 @@ describe('single', function() {
         }, 100);
     });
 
-    it('should call the handler when an array item is deleted', function(done) {
-
-        var subject = [],
-            handler = sinon.stub();
-
-        subject.push(undefined);
-
-        Object.observe(subject, handler);
-
-        subject.pop();
-
-        setTimeout(function() {
-            sinon.assert.calledOnce(handler);
-            sinon.assert.calledWithMatch(handler, numberOfChangesMatching(2));
-            sinon.assert.calledWithMatch(handler, aChangeMatching('delete', '0', undefined, undefined));
-            sinon.assert.calledWithMatch(handler, aChangeMatching('update', 'length', 0));
-            done();
-        }, 100);
-    });
 });

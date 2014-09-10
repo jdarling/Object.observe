@@ -5,6 +5,32 @@ function numberOfChangesMatching(number) {
     }, 'number of changes matching ' + number);
 }
 
+function aChangeMatches(changes, options){
+  var found = false, i=0, l = changes.length, change;
+  var test = function(change){
+    var result=true;
+    var checkFor = function(prop){
+      if(typeof(options[prop])!=='undefined'){
+        return change[prop]===options[prop];
+      }
+      return true;
+    };
+    result = checkFor('name');
+    result = result && checkFor('type');
+    result = result && checkFor('oldValue');
+    result = result && checkFor('newValue');
+    return result;
+  };
+  for(i=0; i<l && !found; i++){
+    change = changes[i];
+    found = test(change);
+  }
+  if(!found){
+    console.log(changes);
+    throw new Error('A change matching type: ' + options.type + ', name: ' + options.name + ', newValue: ' + options.newValue + ', oldValue: ' + options.oldValue + ' not found!');
+  }
+}
+
 function aChangeMatching(type, name, newValue, oldValue) {
 
     var args = arguments;
