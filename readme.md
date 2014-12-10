@@ -1,5 +1,18 @@
 [![Build Status](https://travis-ci.org/jdarling/Object.observe.svg?branch=master)](https://travis-ci.org/jdarling/Object.observe)
 
+Needs a maintainer
+==================
+
+I'd like to find someone who is willing to take this library over.  I've had no time to work with and/or maintain the library.  Honestly I have little need for Object.observe making it hard to justify time spent against it.
+
+So, if your using this shim, feel comfortable with the code, and would like to maintain it, let me know.
+
+If your curious why I don't have much use for the library, this http://markdalgleish.github.io/presentation-a-state-of-change-object-observe/ pretty well sums it up.  I worked in native development when two way data binding caused all sorts of issues with application development, and I see the same coming out of Object.observe at the end of the day.
+
+Hopefully, someone will want to maintain this work in the future.
+
+Oh, and if you take it over, feel free to relicense it within reason as it seems no one likes unlicense :).  Also feel free to follow up on the polyfill-service integration if you so see fit (https://github.com/Financial-Times/polyfill-service/pull/81#issuecomment-66382432).
+
 Object.observe Polyfill/shim
 ============================
 Thanks to my new job I have a lot more time to devote to things like this library.  It has gone a REALLY long time without updates and there is a lot that can be done to make it more functional.  I hope to be spending more time on it soon, but for now I've fixed all the bugs that I know of and have been reported.  Thanks to everyone for their reports, and keep them coming if you find one.
