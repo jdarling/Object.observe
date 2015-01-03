@@ -245,6 +245,8 @@ if(!Object.observe){
             properties.splice(idx,1);
             values.splice(idx,1);
             for(var i=idx;i<properties.length;i++){
+              if(!(properties[i] in object))
+                continue;
               var info = Object.getOwnPropertyDescriptor(object,properties[i]).get.info;
               info.idx = i;
             }
