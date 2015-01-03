@@ -180,16 +180,21 @@ if(!Object.observe){
         (function(idx, prop){
           properties[idx] = prop;
           values[idx] = object[prop];
-          Object.defineProperty(object, prop, {
-            get: function(){
-              return values[idx];
-            },
-            set: function(value){
-              if(!sameValue(values[idx], value)){
-                Object.getNotifier(object).queueUpdate(object, prop, 'update', values[idx]);
-                values[idx] = value;
-              }
+          function getter(){
+            return values[getter.info.idx];
+          }
+          function setter(value){
+            if(!sameValue(values[setter.info.idx], value)){
+              Object.getNotifier(object).queueUpdate(object, prop, 'update', values[setter.info.idx]);
+              values[setter.info.idx] = value;
             }
+          }
+          getter.info = setter.info = {
+            idx: idx
+          };
+          Object.defineProperty(object, prop, {
+            get: getter,
+            set: setter
           });
         })(properties.length, prop);
         return true;
@@ -239,6 +244,15 @@ if(!Object.observe){
             self.queueUpdate(object, oldKeys[i], 'delete', values[idx]);
             properties.splice(idx,1);
             values.splice(idx,1);
+            for(var i=idx;i<properties.length;i++){
+              if(!(properties[i] in object))
+                continue;
+              var getter = Object.getOwnPropertyDescriptor(object,properties[i]).get;
+              if(!getter)
+                continue;
+              var info = getter.info;
+              info.idx = i;
+            }
           };
         }
       };
