@@ -247,7 +247,10 @@ if(!Object.observe){
             for(var i=idx;i<properties.length;i++){
               if(!(properties[i] in object))
                 continue;
-              var info = Object.getOwnPropertyDescriptor(object,properties[i]).get.info;
+              var getter = Object.getOwnPropertyDescriptor(object,properties[i]).get;
+              if(!getter)
+                continue;
+              var info = getter.info;
               info.idx = i;
             }
           };
