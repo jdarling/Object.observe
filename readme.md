@@ -1,5 +1,10 @@
 [![Build Status](https://travis-ci.org/jdarling/Object.observe.svg?branch=master)](https://travis-ci.org/jdarling/Object.observe)
 
+Other Options
+=============
+
+MaxArt2501 has started his own Object.observe polyfill, and a look at his commit history and reasoning makes me think it will probably be well supported.  If your looking for an Object.observe solution you should take a look at https://github.com/MaxArt2501/object-observe
+
 Needs a maintainer
 ==================
 
